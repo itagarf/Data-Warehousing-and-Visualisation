@@ -1,0 +1,113 @@
+CREATE TABLE film_dim (
+  filmKey int NOT NULL IDENTITY(1,1),
+  film_id smallint NOT NULL,
+  title nvarchar(255),
+  actor_first_name nvarchar(45) NOT NULL,
+  actor_last_name nvarchar(45) NOT NULL,
+  description text DEFAULT NULL,
+  release_year smallint DEFAULT NULL,
+  language_id tinyint,
+  language_name nchar(20),
+  original_language_id tinyint DEFAULT NULL,
+  category_name nvarchar(25),
+  rental_duration tinyint NOT NULL DEFAULT 3,
+  rental_rate decimal(4,2) NOT NULL DEFAULT 4.99,
+  length smallint DEFAULT NULL,
+  replacement_cost decimal(5,2) NOT NULL DEFAULT 19.99,
+  [rating] nvarchar(45) NOT NULL CHECK([rating] IN('G','PG','PG-13','R','NC-17')) DEFAULT 'G',
+  special_features varchar(255) NOT NULL,
+  CONSTRAINT pk_film_dim PRIMARY KEY (filmKey)
+);
+GO
+
+
+ CREATE TABLE customer_dim (
+  customerKey int NOT NULL IDENTITY(1,1),
+  customer_id smallint NOT NULL,
+  first_name nvarchar(45) NOT NULL,
+  last_name nvarchar(45) NOT NULL,
+  email nvarchar(50) DEFAULT NULL,
+  address nvarchar(50),
+  address2 nvarchar(50) DEFAULT NULL,
+  district nvarchar(20),
+  city nvarchar(50),
+  postal_code nvarchar(10) DEFAULT NULL,
+  country nvarchar(50),
+  phone nvarchar(20),
+  active tinyint NOT NULL DEFAULT 1,
+  create_date datetime NOT NULL,
+  CONSTRAINT pk_customer_dim PRIMARY KEY (customerKey)
+);
+GO
+
+
+CREATE TABLE store_dim (
+  storeKey int NOT NULL IDENTITY(10,10),
+  store_id tinyint NOT NULL,
+  store_address nvarchar(50),
+  address2 nvarchar(50) DEFAULT NULL,
+  district nvarchar(20),
+  city nvarchar(50),
+  postal_code nvarchar(10) DEFAULT NULL,
+  country nvarchar(50),
+  phone nvarchar(20),
+  CONSTRAINT pk_store_dim PRIMARY KEY (storeKey)
+);
+GO
+
+
+CREATE TABLE staff_dim (
+  staffKey int NOT NULL IDENTITY(100,1),
+  staff_id tinyint NOT NULL,
+  first_name nvarchar(45) NOT NULL,
+  last_name nvarchar(45) NOT NULL,
+  email nvarchar(50) DEFAULT NULL,
+  username nvarchar(16),
+  password nvarchar(40) DEFAULT NULL,
+  staff_address nvarchar(50),
+  address2 nvarchar(50) DEFAULT NULL,
+  district nvarchar(20),
+  city nvarchar(50),
+  postal_code nvarchar(10) DEFAULT NULL,
+  country nvarchar(50),
+  phone nvarchar(20),
+  active tinyint NOT NULL DEFAULT 1,
+  CONSTRAINT pk_staff_dim PRIMARY KEY (staffKey)
+);
+ GO
+
+
+CREATE TABLE date_dim(
+dateKey int NOT NULL IDENTITY(1,1),
+fullDate datetime,
+date_month int,
+date_quarter char(2),
+date_year int,
+CONSTRAINT pk_dateKey PRIMARY KEY (dateKey)
+);
+GO
+
+#Create the fact table to connect all the dimensions
+
+CREATE TABLE rental_fact(
+filmKey int,
+storekey int,
+staffKey int,
+customerKey int,
+rental_id int,
+rentalDateKey int,
+returnDateKey int,
+payment_id smallint,
+paymentDateKey int,
+amount decimal(5,2),
+CONSTRAINT fk1_filmKey FOREIGN KEY (filmKey) REFERENCES film_dim(filmKey),
+CONSTRAINT fk1_storeKey FOREIGN KEY (storeKey) REFERENCES store_dim(storeKey),
+CONSTRAINT fk1_customerKey FOREIGN KEY (customerKey) REFERENCES customer_dim(customerKey),
+CONSTRAINT fk1_staffKey FOREIGN KEY (staffKey) REFERENCES staff_dim(staffKey),
+CONSTRAINT fk1_rentalDateKey FOREIGN KEY (rentalDateKey) REFERENCES date_dim(dateKey),
+CONSTRAINT fk1_returnDateKey FOREIGN KEY (returnDateKey) REFERENCES date_dim(dateKey),
+CONSTRAINT fk1_paymentDateKey FOREIGN KEY (paymentDateKey) REFERENCES date_dim(dateKey),
+CONSTRAINT pk_rentalFactKey PRIMARY KEY (filmKey, storeKey, customerKey, staffKey, 
+rentalDateKey, rental_id, payment_id)
+); 
+GO
